@@ -34,3 +34,6 @@ jobs:
                 tags: |
                   ghcr.io/${{ github.repository_owner }}/supporthub:${{ steps.vars.outputs.TAG_NAME }}
                   ghcr.io/${{ github.repository_owner }}/supporthub:latest
+
+            - name: Trigger Render deploy
+              run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"

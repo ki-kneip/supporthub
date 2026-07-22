@@ -11,6 +11,7 @@ API de gestão de chamados técnicos, desenvolvida em Django + Django Rest Frame
 - [Como rodar com Docker Compose](#como-rodar-com-docker-compose)
 - [Migrações](#migrações)
 - [Criando um superusuário](#criando-um-superusuário)
+- [Populando o banco com dados de exemplo (seed)](#populando-o-banco-com-dados-de-exemplo-seed)
 - [Rodando os testes](#rodando-os-testes)
 - [Documentação da API (Swagger/Redoc)](#documentação-da-api-swaggerredoc)
 - [Endpoints principais](#endpoints-principais)
@@ -62,7 +63,7 @@ supporthub/
 │       └── docker-publish.yml  # builda e publica a imagem no ghcr.io a cada tag de versão
 ├── backend/
 │   ├── core/                   # settings, urls e configuração do projeto Django
-│   ├── users/                   # usuário customizado (perfis) + comando create_user
+│   ├── users/                   # usuário customizado (perfis) + comandos create_user/seed
 │   ├── customers/               # cadastro de clientes
 │   ├── categories/              # categorias de chamados
 │   ├── tickets/                 # chamados técnicos
@@ -180,6 +181,26 @@ python manage.py create_user --username atendente1 --role atendente --password "
 ```
 
 `--email` é opcional (fica em branco se omitido). Se `--password` for omitido, a senha é pedida de forma segura (sem aparecer no terminal). Via Docker Compose, prefixe com `docker compose exec backend`.
+
+## Populando o banco com dados de exemplo (seed)
+
+Há um comando `seed` que cria, de forma **idempotente** (rodar de novo não duplica nada), um conjunto inicial de dados:
+
+- Usuário `admin` (perfil administrador)
+- Usuário `atendente1` (perfil atendente)
+- As 5 categorias sugeridas no case (Erro no sistema, Solicitação de acesso, Problema financeiro, Suporte técnico, Dúvida geral)
+- 3 clientes fictícios (`cliente1`, `cliente2`, `cliente3`), cada um já com o próprio cadastro de `Customer`
+
+```bash
+python manage.py seed
+```
+
+**Senha dos usuários criados:** vem da variável de ambiente `SEED_PASSWORD`.
+
+- Em desenvolvimento (`DEBUG=True`), se `SEED_PASSWORD` não estiver definida, o comando usa uma senha padrão insegura e avisa isso no terminal — só pra facilitar testar localmente.
+- Em produção (`DEBUG=False`), `SEED_PASSWORD` é **obrigatória** — o comando recusa rodar sem ela (`CommandError`), pra nunca criar usuários com senha previsível num ambiente real.
+
+**Execução automática:** o `entrypoint.sh` do container roda `seed` automaticamente a cada start, logo após o `migrate` (controlado pela variável `RUN_SEED`, análoga ao `RUN_MIGRATIONS`). Em desenvolvimento (`compose.yaml`), isso vem desativado (`RUN_SEED: "false"`) — rode manualmente quando quiser. **Em produção (Render), como não há acesso a shell, isso roda sozinho a cada deploy** — por isso é essencial cadastrar `SEED_PASSWORD` (e uma `DJANGO_SECRET_KEY` própria) nas variáveis de ambiente do serviço antes do primeiro deploy, senão o container falha ao subir.
 
 ## Rodando os testes
 
