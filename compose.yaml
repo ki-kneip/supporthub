@@ -25,6 +25,7 @@ services:
     environment:
       POSTGRES_HOST: db
       RUN_MIGRATIONS: "false"
+      RUN_SEED: "false"
     depends_on:
       db:
         condition: service_healthy
