@@ -2,6 +2,8 @@
 
 API de gestão de chamados técnicos, desenvolvida em Django + Django Rest Framework.
 
+🔗 **Aplicação publicada:** https://supporthub-led7.onrender.com ([documentação interativa](https://supporthub-led7.onrender.com/api/docs/))
+
 ## Índice
 
 - [Objetivo do projeto](#objetivo-do-projeto)
@@ -384,7 +386,18 @@ Se qualquer etapa falhar, o workflow falha e fica visível na aba **Actions** do
 
 ## CD — Entrega Contínua
 
-_(a preencher)_
+**Aplicação publicada:** https://supporthub-led7.onrender.com (documentação interativa em [`/api/docs/`](https://supporthub-led7.onrender.com/api/docs/))
+
+O fluxo de entrega é totalmente automatizado a partir de uma tag de versão:
+
+1. Cria-se e envia-se uma tag (`git tag vX.Y.Z && git push origin vX.Y.Z`)
+2. O workflow [`docker-publish.yml`](.github/workflows/docker-publish.yml) builda a imagem e publica no GitHub Container Registry com duas tags: a da versão (`ghcr.io/ki-kneip/supporthub:vX.Y.Z`) e `:latest`
+3. Ainda no mesmo workflow, um último step dispara o **deploy hook do Render** (URL armazenada como secret `RENDER_DEPLOY_HOOK`, no Environment `Prod` do repositório)
+4. O serviço no Render está configurado para rodar a partir da imagem `ghcr.io/ki-kneip/supporthub:latest` — ao receber o hook, ele puxa a imagem recém-publicada e reinicia
+
+Ou seja: **nenhuma etapa manual** é necessária para colocar uma nova versão no ar além de taguear e dar push — build, publicação da imagem e deploy acontecem em cadeia.
+
+Como o `entrypoint.sh` da imagem roda `migrate` e `seed` automaticamente antes do Gunicorn subir (ver seções [Migrações](#migrações) e [Populando o banco com dados de exemplo (seed)](#populando-o-banco-com-dados-de-exemplo-seed)), o ambiente de produção fica pronto para uso — incluindo um usuário `admin` e dados de exemplo — sem precisar de acesso a shell no Render.
 
 ## Roadmap / Pendências
 
