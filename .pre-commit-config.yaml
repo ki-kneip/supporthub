@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-openapi-schema
+        name: Verifica se o schema OpenAPI esta atualizado
+        entry: python backend/scripts/check_openapi.py
+        language: system
+        pass_filenames: false
+        files: ^backend/(.*/(models|serializers|views)\.py|core/urls\.py)$
