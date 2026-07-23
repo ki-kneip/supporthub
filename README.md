@@ -17,6 +17,7 @@ API de gestão de chamados técnicos, desenvolvida em Django + Django Rest Frame
 - [Notificação por e-mail (assíncrona)](#notificação-por-e-mail-assíncrona)
 - [Rodando os testes](#rodando-os-testes)
 - [Documentação da API (Swagger/Redoc)](#documentação-da-api-swaggerredoc)
+- [CORS (integração com o frontend)](#cors-integração-com-o-frontend)
 - [Endpoints principais](#endpoints-principais)
 - [Exemplos de requisições](#exemplos-de-requisições)
 - [CI — Integração Contínua](#ci--integração-contínua)
@@ -269,6 +270,8 @@ A documentação é gerada automaticamente a partir dos serializers e viewsets (
 
 Para testar endpoints autenticados pelo Swagger UI: gere um token em `/api/token/`, clique em **Authorize** no topo da página e informe `Bearer <access_token>`.
 
+**Auto-preenchimento do token:** o template do Swagger UI foi customizado (`backend/templates/drf_spectacular/swagger_ui.js`) para detectar automaticamente as respostas de `/api/token/` e `/api/token/refresh/` — assim que uma dessas chamadas retorna com sucesso, o `access` token é aplicado automaticamente no **Authorize**, sem precisar copiar e colar manualmente.
+
 O arquivo [`backend/openapi.yml`](backend/openapi.yml) é uma cópia estática do schema, versionada no repositório — útil pra importar em ferramentas como Postman/Insomnia sem precisar da API rodando. Sempre que a API mudar, regenere com:
 
 ```bash
@@ -283,6 +286,17 @@ pre-commit install
 ```
 
 O hook roda com o Python ativo no terminal — ative o `venv` antes de commitar.
+
+## CORS (integração com o frontend)
+
+As origens permitidas vêm da variável `CORS_ALLOWED_ORIGINS` (lista separada por vírgula, **com o esquema incluído**, ex.: `http://localhost:5173`). Sem essa variável definida, o default cobre as portas comuns de Vite/CRA em desenvolvimento:
+
+```bash
+# .env
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+⚠️ Origens sem o esquema (`http://`/`https://`) fazem o Django recusar subir (`corsheaders.E013`) — `manage.py check` acusa isso antes mesmo de tentar rodar o servidor.
 
 ## Endpoints principais
 
