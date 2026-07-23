@@ -11,13 +11,13 @@ paths:
       - name: page
         required: false
         in: query
-        description: A page number within the paginated result set.
+        description: Um número de página dentro do conjunto de resultados paginado.
         schema:
           type: integer
       - name: search
         required: false
         in: query
-        description: A search term.
+        description: Um termo de busca.
         schema:
           type: string
       tags:
@@ -64,7 +64,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this category.
+        description: Um valor inteiro único que identifica este category.
         required: true
       tags:
       - categories
@@ -84,7 +84,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this category.
+        description: Um valor inteiro único que identifica este category.
         required: true
       tags:
       - categories
@@ -116,7 +116,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this category.
+        description: Um valor inteiro único que identifica este category.
         required: true
       tags:
       - categories
@@ -147,7 +147,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this category.
+        description: Um valor inteiro único que identifica este category.
         required: true
       tags:
       - categories
@@ -163,13 +163,13 @@ paths:
       - name: page
         required: false
         in: query
-        description: A page number within the paginated result set.
+        description: Um número de página dentro do conjunto de resultados paginado.
         schema:
           type: integer
       - name: search
         required: false
         in: query
-        description: A search term.
+        description: Um termo de busca.
         schema:
           type: string
       tags:
@@ -216,7 +216,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this customer.
+        description: Um valor inteiro único que identifica este customer.
         required: true
       tags:
       - customers
@@ -236,7 +236,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this customer.
+        description: Um valor inteiro único que identifica este customer.
         required: true
       tags:
       - customers
@@ -268,7 +268,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this customer.
+        description: Um valor inteiro único que identifica este customer.
         required: true
       tags:
       - customers
@@ -299,7 +299,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this customer.
+        description: Um valor inteiro único que identifica este customer.
         required: true
       tags:
       - customers
@@ -327,7 +327,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: A page number within the paginated result set.
+        description: Um número de página dentro do conjunto de resultados paginado.
         schema:
           type: integer
       - in: query
@@ -347,7 +347,7 @@ paths:
       - name: search
         required: false
         in: query
-        description: A search term.
+        description: Um termo de busca.
         schema:
           type: string
       - in: query
@@ -410,7 +410,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this ticket.
+        description: Um valor inteiro único que identifica este ticket.
         required: true
       tags:
       - tickets
@@ -430,7 +430,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this ticket.
+        description: Um valor inteiro único que identifica este ticket.
         required: true
       tags:
       - tickets
@@ -462,7 +462,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this ticket.
+        description: Um valor inteiro único que identifica este ticket.
         required: true
       tags:
       - tickets
@@ -493,7 +493,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this ticket.
+        description: Um valor inteiro único que identifica este ticket.
         required: true
       tags:
       - tickets
@@ -510,7 +510,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this ticket.
+        description: Um valor inteiro único que identifica este ticket.
         required: true
       tags:
       - tickets
@@ -530,7 +530,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this ticket.
+        description: Um valor inteiro único que identifica este ticket.
         required: true
       tags:
       - tickets

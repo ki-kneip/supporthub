@@ -14,6 +14,7 @@ API de gestão de chamados técnicos, desenvolvida em Django + Django Rest Frame
 - [Migrações](#migrações)
 - [Criando um superusuário](#criando-um-superusuário)
 - [Populando o banco com dados de exemplo (seed)](#populando-o-banco-com-dados-de-exemplo-seed)
+- [Notificação por e-mail (assíncrona)](#notificação-por-e-mail-assíncrona)
 - [Rodando os testes](#rodando-os-testes)
 - [Documentação da API (Swagger/Redoc)](#documentação-da-api-swaggerredoc)
 - [Endpoints principais](#endpoints-principais)
@@ -49,6 +50,10 @@ O projeto cobre o ciclo completo de uma API back-end pronta pra produção: mode
 - GitHub Actions (CI/CD)
 - GitHub Container Registry — ghcr.io (registry de imagens)
 
+**Tarefas assíncronas e e-mail**
+- Celery + Redis (fila de tarefas assíncronas)
+- Brevo (envio de e-mail transacional)
+
 **Testes**
 - pytest / pytest-django
 
@@ -64,14 +69,14 @@ supporthub/
 │       ├── ci.yml              # roda a suite de testes a cada push/PR
 │       └── docker-publish.yml  # builda e publica a imagem no ghcr.io a cada tag de versão
 ├── backend/
-│   ├── core/                   # settings, urls e configuração do projeto Django
+│   ├── core/                   # settings, urls, celery.py e email.py (Brevo)
 │   ├── users/                   # usuário customizado (perfis) + comandos create_user/seed
 │   ├── customers/               # cadastro de clientes
 │   ├── categories/              # categorias de chamados
-│   ├── tickets/                 # chamados técnicos
+│   ├── tickets/                 # chamados técnicos + tasks.py (notificação assíncrona)
 │   ├── interactions/            # histórico de interações dos chamados
 │   ├── scripts/
-│   │   ├── entrypoint.sh         # entrypoint do container (migrations + gunicorn)
+│   │   ├── entrypoint.sh         # entrypoint do container (migrations/seed/gunicorn/worker)
 │   │   └── check_openapi.py      # usado pelo hook de pre-commit
 │   ├── conftest.py               # fixtures compartilhadas dos testes (pytest)
 │   ├── pytest.ini
@@ -81,7 +86,7 @@ supporthub/
 │   ├── .dockerignore
 │   └── manage.py
 ├── frontend/                     # (ainda não implementado — ver Roadmap)
-├── compose.yaml                  # sobe banco de dados e backend juntos
+├── compose.yaml                  # sobe banco, redis, backend e worker do celery juntos
 ├── .pre-commit-config.yaml       # hook local: valida se o openapi.yml está atualizado
 ├── LICENSE
 └── README.md
@@ -120,7 +125,7 @@ A API fica disponível em `http://localhost:8000`.
 
 ## Como rodar com Docker Compose
 
-Sobe o banco de dados e a aplicação juntos, cada um em seu container.
+Sobe 4 serviços, cada um em seu container: `db` (PostgreSQL), `redis`, `backend` (API) e `worker` (Celery, processa os e-mails assíncronos).
 
 ```bash
 # na raiz do repositório (onde está o compose.yaml)
@@ -129,7 +134,7 @@ cp backend/.env.example backend/.env   # ajuste os valores se necessário
 docker compose up -d --build
 ```
 
-Isso constrói a imagem do backend (`backend/Dockerfile`), sobe o Postgres com healthcheck e só inicia a aplicação depois que o banco estiver pronto (`depends_on: condition: service_healthy`).
+Isso constrói a imagem do backend (`backend/Dockerfile`, reaproveitada tanto pelo `backend` quanto pelo `worker`, diferenciados pela variável `PROCESS_TYPE`), sobe o Postgres e o Redis com healthcheck, e só inicia `backend`/`worker` depois que as dependências estiverem prontas (`depends_on: condition: service_healthy`).
 
 A API fica disponível em `http://localhost:8000`.
 
@@ -203,6 +208,30 @@ python manage.py seed
 - Em produção (`DEBUG=False`), `SEED_PASSWORD` é **obrigatória** — o comando recusa rodar sem ela (`CommandError`), pra nunca criar usuários com senha previsível num ambiente real.
 
 **Execução automática:** o `entrypoint.sh` do container roda `seed` automaticamente a cada start, logo após o `migrate` (controlado pela variável `RUN_SEED`, análoga ao `RUN_MIGRATIONS`). Em desenvolvimento (`compose.yaml`), isso vem desativado (`RUN_SEED: "false"`) — rode manualmente quando quiser. **Em produção (Render), como não há acesso a shell, isso roda sozinho a cada deploy** — por isso é essencial cadastrar `SEED_PASSWORD` (e uma `DJANGO_SECRET_KEY` própria) nas variáveis de ambiente do serviço antes do primeiro deploy, senão o container falha ao subir.
+
+## Notificação por e-mail (assíncrona)
+
+Quando um chamado muda de **status** (via API, por atendente/admin), o cliente recebe um e-mail automático — processado em segundo plano por um worker Celery, sem bloquear a requisição HTTP.
+
+**Debounce:** a notificação não é enviada na hora — ela é agendada com um atraso (30s por padrão). Se o status mudar de novo dentro dessa janela, só a **última** mudança efetivamente dispara o e-mail (as anteriores são descartadas silenciosamente). Isso evita mandar um e-mail para cada edição rápida em sequência.
+
+**Envio via Brevo, com fallback automático:** a função `core/email.py` só chama a API do Brevo se `BREVO_API_KEY` e `BREVO_SENDER_EMAIL` estiverem configuradas no ambiente. Caso contrário, o e-mail é apenas **impresso no console** (`[EMAIL:CONSOLE] ...`) — útil em desenvolvimento, ou enquanto a verificação de domínio no Brevo ainda não foi concluída.
+
+```bash
+# .env
+REDIS_URL=redis://localhost:6379/0    # broker do Celery
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+```
+
+**Requer o worker rodando.** Via `docker compose up`, ele já sobe junto (serviço `worker`). Rodando localmente sem Docker, é preciso iniciar o worker manualmente numa aba separada:
+
+```bash
+cd backend
+celery -A core worker --loglevel=info
+```
+
+Sem o worker ativo, as tasks ficam enfileiradas no Redis aguardando alguém processá-las — o e-mail simplesmente não sai até o worker rodar.
 
 ## Rodando os testes
 
@@ -409,5 +438,5 @@ Como o `entrypoint.sh` da imagem roda `migrate` e `seed` automaticamente antes d
 **Diferenciais do case ainda não implementados**
 - Relatório de cobertura de testes (`pytest-cov` / `coverage.py`)
 - Registro de logs estruturado
-- Envio de e-mail automático quando um chamado for atualizado
-- Celery + Redis para tarefas assíncronas (ex.: o próprio envio de e-mail, de forma não bloqueante)
+
+**Observação sobre o e-mail transacional:** o domínio de envio no Brevo ainda não foi verificado — os e-mails atualmente saem pelo remetente de sandbox deles. Funciona (testado com credenciais reais), mas a entregabilidade/remetente final deve melhorar após a verificação de domínio ser concluída.

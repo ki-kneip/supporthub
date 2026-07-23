@@ -1,5 +1,6 @@
 from interactions.serializers import InteractionSerializer
 from .serializers import TicketSerializer
+from .tasks import schedule_status_notification
 from users.models import User
 from .models import Ticket
 from customers.models import Customer
@@ -31,6 +32,12 @@ class TicketViewSet(viewsets.ModelViewSet):
             serializer.save(customer=customer)
         else:
             serializer.save()
+
+    def perform_update(self, serializer):
+        old_status = serializer.instance.status
+        ticket = serializer.save()
+        if ticket.status != old_status:
+            schedule_status_notification(ticket)
 
     @action(detail=True, methods=["get", "post"])
     def interactions(self, request, pk=None):
