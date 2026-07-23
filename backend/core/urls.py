@@ -7,11 +7,13 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 from categories.views import CategoryViewSet
 from customers.views import CustomerViewSet
 from tickets.views import TicketViewSet
+from users.views import UserViewSet
 
 router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
 router.register("customers", CustomerViewSet, basename="customer")
 router.register("tickets", TicketViewSet, basename="ticket")
+router.register("users", UserViewSet, basename="user")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
