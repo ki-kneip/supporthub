@@ -455,3 +455,5 @@ Como o `entrypoint.sh` da imagem roda `migrate` e `seed` automaticamente antes d
 - Registro de logs estruturado
 
 **Observação sobre o e-mail transacional:** o domínio de envio no Brevo ainda não foi verificado — os e-mails atualmente saem pelo remetente de sandbox deles. Funciona (testado com credenciais reais), mas a entregabilidade/remetente final deve melhorar após a verificação de domínio ser concluída.
+
+**Observação sobre os tokens JWT:** avaliei mover `access`/`refresh` para cookies `httpOnly` (mais seguro contra roubo via XSS que `localStorage`) e decidi não fazer essa mudança neste case — é viável tecnicamente, mas adiciona complexidade (CORS com credentials, proteção CSRF, flags de cookie variando por ambiente) desnecessária para um projeto de avaliação técnica. Os tokens continuam sendo retornados no corpo da resposta de `/api/token/`.
