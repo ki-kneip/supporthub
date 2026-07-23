@@ -43,6 +43,7 @@ O projeto cobre o ciclo completo de uma API back-end pronta pra produção: mode
 - JWT via `djangorestframework-simplejwt`
 - `django-filter` (filtros e busca)
 - `drf-spectacular` (documentação OpenAPI/Swagger/Redoc)
+- `django-cors-headers` (libera acesso do frontend em outra origem)
 
 **Infraestrutura**
 - Docker / Docker Compose
