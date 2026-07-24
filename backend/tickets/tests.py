@@ -69,11 +69,12 @@ class TestTicketAPI:
 
     def test_atendente_altera_status_do_ticket(self, api_client, atendente_user, ticket):
         api_client.force_authenticate(user=atendente_user)
-        response = api_client.patch(
-            reverse("ticket-detail", args=[ticket.id]),
-            {"status": Ticket.Status.EM_ATENDIMENTO},
-            format="json"
-        )
+        with mock.patch("tickets.views.schedule_status_notification"):
+            response = api_client.patch(
+                reverse("ticket-detail", args=[ticket.id]),
+                {"status": Ticket.Status.EM_ATENDIMENTO},
+                format="json"
+            )
 
         assert response.status_code == status.HTTP_200_OK
         ticket.refresh_from_db()

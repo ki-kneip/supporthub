@@ -24,13 +24,23 @@ jobs:
                     --health-interval 10s
                     --health-timeout 5s
                     --health-retries 5
-        
+            redis:
+                image: redis:7-alpine
+                ports:
+                    - 6379:6379
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
         env:
             POSTGRES_DB: supporthub
             POSTGRES_USER: supporthub
             POSTGRES_PASSWORD: supporthub
             POSTGRES_HOST: localhost
             POSTGRES_PORT: 5432
+            REDIS_URL: redis://localhost:6379/0
 
         defaults:
             run:
