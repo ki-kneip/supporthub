@@ -87,7 +87,6 @@ supporthub/
 │   ├── Dockerfile
 │   ├── .dockerignore
 │   └── manage.py
-├── frontend/                     # (ainda não implementado — ver Roadmap)
 ├── compose.yaml                  # sobe banco, redis, backend e worker do celery juntos
 ├── .pre-commit-config.yaml       # hook local: valida se o openapi.yml está atualizado
 ├── LICENSE
@@ -257,6 +256,14 @@ Pra rodar só os testes de um app específico:
 ```bash
 pytest tickets/tests.py -v
 ```
+
+**Cobertura de testes:**
+
+```bash
+pytest --cov --cov-report=term-missing
+```
+
+Configuração em `backend/.coveragerc` (exclui migrations, `venv/`, `manage.py` e os próprios arquivos de teste da contagem). Cobertura atual: ~84%.
 
 ## Documentação da API (Swagger/Redoc)
 
@@ -444,15 +451,6 @@ Ou seja: **nenhuma etapa manual** é necessária para colocar uma nova versão n
 Como o `entrypoint.sh` da imagem roda `migrate` e `seed` automaticamente antes do Gunicorn subir (ver seções [Migrações](#migrações) e [Populando o banco com dados de exemplo (seed)](#populando-o-banco-com-dados-de-exemplo-seed)), o ambiente de produção fica pronto para uso — incluindo um usuário `admin` e dados de exemplo — sem precisar de acesso a shell no Render.
 
 ## Roadmap / Pendências
-
-> Espaço reservado para o que ainda falta implementar: frontend e outras evoluções futuras do projeto.
-
-**Frontend**
-- Ainda não implementado. Pasta `frontend/` reservada na raiz do repositório para essa etapa futura.
-
-**Diferenciais do case ainda não implementados**
-- Relatório de cobertura de testes (`pytest-cov` / `coverage.py`)
-- Registro de logs estruturado
 
 **Observação sobre o e-mail transacional:** o domínio de envio no Brevo ainda não foi verificado — os e-mails atualmente saem pelo remetente de sandbox deles. Funciona (testado com credenciais reais), mas a entregabilidade/remetente final deve melhorar após a verificação de domínio ser concluída.
 
